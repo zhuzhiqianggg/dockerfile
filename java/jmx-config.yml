@@ -1,0 +1,4 @@
+lowercaseOutputLabelNames: false
+lowercaseOutputName: false
+rules:
+- pattern: ".*"

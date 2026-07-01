@@ -1,0 +1,13 @@
+server:
+  port: ${SERVICE_PORT:8080}
+spring:
+  application:
+    name: test-app
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

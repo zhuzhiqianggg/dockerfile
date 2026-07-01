@@ -1,0 +1,15 @@
+node_modules/
+.git/
+*.tgz
+*.tar.gz
+Dockerfile-*
+entrypoint-*.sh
+entrypoint.sh-bak
+package.json
+package-lock.json
+kyt-web-app.jar
+kyt-web-app/
+test/
+*.md
+skywalking-agent/
+apache-skywalking-java-agent-9.4.0.tgz
