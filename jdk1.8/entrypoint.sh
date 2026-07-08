@@ -10,10 +10,9 @@ set -euo pipefail
 #
 #  内存说明:
 #    JVM 进程总内存 = Heap + Metaspace + CodeCache + ThreadStack + DirectBuffer + Native
-#    当 -Xmx4g 时, 总 RSS ≈ 4.8~5.5G 是正常范围.
-#    推荐做法: 不设 JVM_HEAP, 通过 Docker --memory 限制容器总内存,
-#    配合 -XX:MaxRAMPercentage=70 自动计算堆大小, 保留 30% 给非堆开销.
-#    例: docker run --memory=6g -> 自动 Heap~4.2g, 总内存~6g, 不会超限.
+#    当 -Xmx2g 时, 总 RSS ≈ 2.5~2.8G 是正常范围.
+#    默认 -Xms2G -Xmx2G (适用 2.5G/3G request/limit 的容器).
+#    通过 JAVA_OPTS_MEM 环境变量可覆盖, 优先级最高.
 # =============================================================================
 
 log()    { echo "[$(date '+%Y-%m-%d %H:%M:%S')] [entrypoint] $*" >&2; }
@@ -38,10 +37,6 @@ build_default_jvm_opts() {
         "-Djava.io.tmpdir=/tmp"
         "-Dsun.net.inetaddr.ttl=60"
 
-        "-XX:+UseContainerSupport"
-        "-XX:MaxRAMPercentage=70.0"
-        "-XX:InitialRAMPercentage=70.0"
-
         "-XX:+UnlockExperimentalVMOptions"
         "-XX:+UseG1GC"
         "-XX:MaxGCPauseMillis=200"
@@ -56,7 +51,6 @@ build_default_jvm_opts() {
         "-XX:MaxMetaspaceSize=256m"
         "-XX:ReservedCodeCacheSize=240m"
 
-        "-XX:+AlwaysPreTouch"
         "-XX:+UseStringDeduplication"
         "-XX:+OptimizeStringConcat"
         "-XX:+UseCompressedOops"
@@ -124,6 +118,9 @@ main() {
         debug "JVM_HEAP: ${JVM_HEAP}"
         read -ra heap <<< "${JVM_HEAP}"
         cmd+=("${heap[@]}")
+    else
+        debug "Using default -Xms2G -Xmx2G"
+        cmd+=("-Xms2G" "-Xmx2G")
     fi
 
     # JAVA_OPTS_JMX_EXPORTER — 覆盖默认 JMX agent 参数

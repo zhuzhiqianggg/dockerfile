@@ -32,7 +32,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 echo "============================================"
-echo " Java Docker Base - Build & Test"
+echo " ${IMAGE_NAME^} ${JDK_VERSION} Docker Base - Build & Test"
 echo "============================================"
 echo " Image:     ${TAG}"
 echo " JDK:       ${JDK_VERSION}"
@@ -53,13 +53,13 @@ docker buildx build \
 echo ""
 echo "[2/4] Building test app (Maven in Docker)..."
 docker run --rm \
-    -v "$(pwd)/test-app:/app" \
+    -v "$(pwd)/../jdk1.8/test-app:/app" \
     -v maven-repo:/root/.m2 \
     -w /app \
-    maven:3.8.5-openjdk-8 \
-    mvn clean package -q -DskipTests
+    maven:3.9-eclipse-temurin-17 \
+    mvn clean package -q -DskipTests -Djava.version=17
 
-JAR="test-app/target/test-app.jar"
+JAR="../jdk1.8/test-app/target/test-app.jar"
 if [[ ! -f "${JAR}" ]]; then
     echo "ERROR: ${JAR} not found after Maven build!"
     exit 1
