@@ -44,6 +44,7 @@ jdk17/                # JDK 17 版本（结构与 jdk1.8 一致）
 | `JAVA_OPTS_JMX_EXPORTER` | (空) | 完整 JMX javaagent 参数（覆盖默认 agent） |
 | `JVM_EXTRA_OPTS` | (空) | 附加 JVM 参数，追加在最后 |
 | `JMX_EXPORTER_PORT` | `9999` | JMX Prometheus 端口 |
+| `JMX_ENABLED` | `true` | JMX 总开关，设为 `false` 完全禁用 |
 | `TZ` | `Asia/Shanghai` | 时区 |
 | `DEBUG` | `false` | 设为 `true` 打印调试日志 |
 

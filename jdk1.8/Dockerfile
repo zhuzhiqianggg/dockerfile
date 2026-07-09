@@ -44,6 +44,7 @@ ENV SERVICE_NAME="" \
     JVM_HEAP="" \
     JVM_EXTRA_OPTS="" \
     JMX_EXPORTER_PORT=9999 \
+    JMX_ENABLED="true" \
     DEBUG="false"
 
 RUN chmod 775 /service/logs /service/dumps /tmp/dumps

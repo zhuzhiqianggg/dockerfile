@@ -26,6 +26,7 @@ validate() {
 }
 
 build_default_jvm_opts() {
+    local jmx_enabled="${1:-true}"
     local tz="${TZ:-Asia/Shanghai}"
     local jmx_port="${JMX_EXPORTER_PORT:-9999}"
     local -a opts=(
@@ -65,9 +66,12 @@ build_default_jvm_opts() {
 
         "-Dspring.main.register-shutdown-hook=true"
         "-Dspring.jmx.enabled=true"
-
-        "-javaagent:/service/jmx_exporter/jmx_prometheus_javaagent.jar=${jmx_port}:/service/jmx_exporter/config.yml"
     )
+
+    # JMX agent (默认启用，JMX_ENABLED=false 关闭，JAVA_OPTS_JMX_EXPORTER 覆盖)
+    if [[ "${jmx_enabled}" != "false" ]] && [[ -z "${JAVA_OPTS_JMX_EXPORTER:-}" ]]; then
+        opts+=("-javaagent:/service/jmx_exporter/jmx_prometheus_javaagent.jar=${jmx_port}:/service/jmx_exporter/config.yml")
+    fi
 
     local ver
     ver=$(java -version 2>&1) || true
@@ -100,6 +104,7 @@ main() {
     JVM_HEAP="${JVM_HEAP:-}"
     JVM_EXTRA_OPTS="${JVM_EXTRA_OPTS:-}"
     JMX_EXPORTER_PORT="${JMX_EXPORTER_PORT:-9999}"
+    JMX_ENABLED="${JMX_ENABLED:-true}"
     DEBUG="${DEBUG:-false}"
     TZ="${TZ:-Asia/Shanghai}"
 
@@ -123,8 +128,11 @@ main() {
         cmd+=("-Xms2G" "-Xmx2G")
     fi
 
-    # JAVA_OPTS_JMX_EXPORTER — 覆盖默认 JMX agent 参数
-    if [[ -n "${JAVA_OPTS_JMX_EXPORTER}" ]]; then
+    local jmx_enabled
+    jmx_enabled=$(echo "${JMX_ENABLED}" | tr '[:upper:]' '[:lower:]')
+
+    # JAVA_OPTS_JMX_EXPORTER — 覆盖默认 JMX agent (仅在 JMX 启用时生效)
+    if [[ "${jmx_enabled}" != "false" ]] && [[ -n "${JAVA_OPTS_JMX_EXPORTER}" ]]; then
         debug "JAVA_OPTS_JMX_EXPORTER: ${JAVA_OPTS_JMX_EXPORTER}"
         read -ra jmx_opts <<< "${JAVA_OPTS_JMX_EXPORTER}"
         cmd+=("${jmx_opts[@]}")
@@ -132,7 +140,7 @@ main() {
 
     while IFS= read -r opt; do
         [[ -n "$opt" ]] && cmd+=("$opt")
-    done < <(build_default_jvm_opts)
+    done < <(build_default_jvm_opts "${jmx_enabled}")
 
     if [[ -n "${JVM_EXTRA_OPTS}" ]]; then
         debug "JVM_EXTRA_OPTS: ${JVM_EXTRA_OPTS}"
